@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/evinowen/grocery-basket#readme",
   "dependencies": {
+    "@google-cloud/secret-manager": "^4.2.1",
     "selenium-webdriver": "^4.8.1"
   }
 }

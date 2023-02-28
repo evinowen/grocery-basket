@@ -2,6 +2,11 @@ const fs = require('fs').promises
 const { Builder, By, Key, until } = require('selenium-webdriver')
 const Chrome = require('selenium-webdriver/chrome')
 
+const { SecretManagerServiceClient } = require('@google-cloud/secret-manager')
+const gcp_secret_client = new SecretManagerServiceClient()
+const name_safeway_username_secret = process.env.SAFEWAY_USERNAME_SECRET
+const name_safeway_password_secret = process.env.SAFEWAY_PASSWORD_SECRET
+
 const sleep_time = process.env.SLEEP_TIME || 4000
 
 const site_product = 'https://www.safeway.com/shop/product-details.PRODUCT_ID.html'
@@ -60,19 +65,28 @@ function boil (value, data) {
   return result
 }
 
+async function secret (name) {
+  const [version] = await gcp_secret_client.accessSecretVersion({ name })
+  return version.payload.data.toString()
+}
+
 async function screenshot (driver, title) {
   const image = await driver.takeScreenshot()
-  await fs.writeFile(`screens/${title}.png`, image, 'base64')
+  await fs.writeFile(`output/${title}.png`, image, 'base64')
 }
 
 async function sign_in (driver) {
+  const safeway_username = await secret(name_safeway_username_secret)
+  const safeway_password = await secret(name_safeway_password_secret)
+  console.log('Login', safeway_username, safeway_password)
+
   await driver.get('https://www.safeway.com/account/sign-in.html')
 
   await sleep(driver)
 
   await driver.findElement(By.id('onetrust-accept-btn-handler')).click()
-  await driver.findElement(By.id('label-email')).sendKeys(process.env.SAFEWAY_USERNAME)
-  await driver.findElement(By.id('label-password')).sendKeys(process.env.SAFEWAY_PASSWORD)
+  await driver.findElement(By.id('label-email')).sendKeys(safeway_username)
+  await driver.findElement(By.id('label-password')).sendKeys(safeway_password)
 
   await screenshot(driver, 'sign-in-load')
 
@@ -126,7 +140,6 @@ async function main () {
 
   await driver.manage().window().setRect({ width: 1280, height: 960 })
 
-  console.log('Login', process.env.SAFEWAY_USERNAME, process.env.SAFEWAY_PASSWORD)
   await sign_in(driver)
 
   for (const [id, item] of list) {
