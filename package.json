@@ -1,0 +1,22 @@
+{
+  "name": "grocery-basket",
+  "version": "1.0.0",
+  "description": "Process to order groceries automatically via a cron process",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evinowen/grocery-basket.git"
+  },
+  "author": "Evin Owen <mail@evinowen.net>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/evinowen/grocery-basket/issues"
+  },
+  "homepage": "https://github.com/evinowen/grocery-basket#readme",
+  "dependencies": {
+    "selenium-webdriver": "^4.8.1"
+  }
+}
