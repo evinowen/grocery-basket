@@ -4,10 +4,17 @@ const Chrome = require('selenium-webdriver/chrome')
 const { Firestore } = require('@google-cloud/firestore')
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager')
 const gcp_secret_client = new SecretManagerServiceClient()
+const sendgrid_mail = require('@sendgrid/mail')
+
 const name_firestore_grocery_collection = process.env.FIRESTORE_GROCERY_COLLECTION || 'groceries'
 const name_safeway_username_secret = process.env.SAFEWAY_USERNAME_SECRET || null
 const name_safeway_password_secret = process.env.SAFEWAY_PASSWORD_SECRET || null
 const name_cvv_code_secret = process.env.CVV_CODE_SECRET || null
+
+sendgrid_mail.setApiKey(process.env.SENDGRID_API_KEY)
+const sendgrid_from_email = process.env.SENDGRID_FROM_EMAIL
+const sendgrid_to_email = process.env.SENDGRID_TO_EMAIL
+const output_bucket = process.env.OUTPUT_BUCKET
 
 const sleep_time = process.env.SLEEP_TIME || 4000
 
@@ -180,6 +187,39 @@ async function checkout (driver) {
 
 }
 
+async function notify () {
+  const date = new Date
+  const date_string = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+
+  const message = {
+    to: sendgrid_to_email,
+    from: sendgrid_from_email,
+    subject: `Groceries Shopped for ${date_string}`,
+    html: `
+      <h1>Groceries Shopped for ${date_string}</h1>
+      <br />
+      <img src="https://storage.googleapis.com/${output_bucket}/shopping-cart.png" />
+      <br />
+      <img src="https://storage.googleapis.com/${output_bucket}/prebook-done.png" />
+      <br />
+      <img src="https://storage.googleapis.com/${output_bucket}/checkout-load.png" />
+      <br />
+      <img src="https://storage.googleapis.com/${output_bucket}/checkout-done.png" />
+      <br />
+    `
+  }
+
+  try {
+    await sendgrid_mail.send(message)
+  } catch (error) {
+    console.error(error)
+
+    if (error.response) {
+      console.error(error.response.body)
+    }
+  }
+}
+
 async function main () {
   const options = new Chrome.Options()
   options.addArguments('--headless=new')
@@ -203,6 +243,8 @@ async function main () {
   await checkout(driver)
 
   await driver.quit()
+
+  await notify()
 }
 
 main()
