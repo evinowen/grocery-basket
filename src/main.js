@@ -1,9 +1,10 @@
 const fs = require('fs').promises
 const { Builder, By, Key, until } = require('selenium-webdriver')
 const Chrome = require('selenium-webdriver/chrome')
-
+const { Firestore } = require('@google-cloud/firestore')
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager')
 const gcp_secret_client = new SecretManagerServiceClient()
+const name_firestore_grocery_collection = process.env.FIRESTORE_GROCERY_COLLECTION || 'groceries'
 const name_safeway_username_secret = process.env.SAFEWAY_USERNAME_SECRET
 const name_safeway_password_secret = process.env.SAFEWAY_PASSWORD_SECRET
 
@@ -15,39 +16,6 @@ const elements = {
   'ADD_BUTTON': 'addButton_PRODUCT_ID',
   'QUANTITY_UP_BUTTON': 'inc_qtyInfo_PRODUCT_ID'
 }
-
-const list = new Map([
-  ['196050889', { quantity: 1 }],
-  ['970003224', { quantity: 1 }],
-  ['138250149', { quantity: 1 }],
-  ['184710086', { quantity: 1 }],
-  ['184650215', { quantity: 1 }],
-  ['970081327', { quantity: 1 }],
-  ['194050042', { quantity: 1 }],
-  ['184700054', { quantity: 1 }],
-  ['960019675', { quantity: 1 }],
-  ['960453995', { quantity: 1 }],
-  ['970020211', { quantity: 1 }],
-  ['960109455', { quantity: 1 }],
-  ['186190041', { quantity: 1 }],
-  ['960109669', { quantity: 1 }],
-  ['960143719', { quantity: 1 }],
-  ['960542251', { quantity: 1 }],
-  ['188020255', { quantity: 1 }],
-  ['960131438', { quantity: 1 }],
-  ['960131566', { quantity: 1 }],
-  ['125300006', { quantity: 1 }],
-  ['125300108', { quantity: 1 }],
-  ['970021707', { quantity: 1 }],
-  ['960019121', { quantity: 1 }],
-  ['184710082', { quantity: 1 }],
-  ['960044446', { quantity: 1 }],
-  ['119030197', { quantity: 1 }],
-  ['120020082', { quantity: 1 }],
-  ['960167431', { quantity: 1 }],
-  ['195150180', { quantity: 1 }],
-  ['189010622', { quantity: 1 }]
-])
 
 async function sleep (driver, coefficent = 1.0) {
   const time = parseInt(sleep_time * coefficent, 10)
@@ -101,9 +69,10 @@ async function sign_in (driver) {
 
 async function add_product (driver, id, item) {
   const data = { ...item, id }
+  console.log(`Add ${data.name || data.id}`)
 
   const item_url = boil(site_product, data)
-  console.log('Goto Product', data.id, item, item_url)
+  console.log('Goto Product', item_url)
   await driver.get(item_url)
 
   await sleep(driver)
@@ -134,6 +103,16 @@ async function add_product (driver, id, item) {
   }
 }
 
+async function list_groceries() {
+  const result = new Map()
+  const firestore = new Firestore()
+
+  const snapshot = await firestore.collection(name_firestore_grocery_collection).get()
+  snapshot.docs.forEach(doc => result.set(doc.id, doc.data()))
+
+  return result
+}
+
 async function main () {
   const options = new Chrome.Options()
   options.addArguments('--headless=new')
@@ -143,6 +122,8 @@ async function main () {
   await driver.manage().window().setRect({ width: 1280, height: 960 })
 
   await sign_in(driver)
+
+  const list = await list_groceries()
 
   for (const [id, item] of list) {
     await add_product(driver, id, item)
