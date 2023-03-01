@@ -5,12 +5,19 @@ const { Firestore } = require('@google-cloud/firestore')
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager')
 const gcp_secret_client = new SecretManagerServiceClient()
 const name_firestore_grocery_collection = process.env.FIRESTORE_GROCERY_COLLECTION || 'groceries'
-const name_safeway_username_secret = process.env.SAFEWAY_USERNAME_SECRET
-const name_safeway_password_secret = process.env.SAFEWAY_PASSWORD_SECRET
+const name_safeway_username_secret = process.env.SAFEWAY_USERNAME_SECRET || null
+const name_safeway_password_secret = process.env.SAFEWAY_PASSWORD_SECRET || null
+const name_cvv_code_secret = process.env.CVV_CODE_SECRET || null
 
 const sleep_time = process.env.SLEEP_TIME || 4000
 
+const site_login = 'https://www.safeway.com/account/sign-in.html'
+const site_prebook = 'https://www.safeway.com/erums/store/prebook'
 const site_product = 'https://www.safeway.com/shop/product-details.PRODUCT_ID.html'
+const site_shopping_cart = 'https://www.safeway.com/erums/cart'
+const site_checkout = 'https://www.safeway.com/erums/checkout'
+
+const cvv_code = '000'
 
 const elements = {
   'ADD_BUTTON': 'addButton_PRODUCT_ID',
@@ -50,7 +57,7 @@ async function sign_in (driver) {
   const safeway_password = await secret(name_safeway_password_secret)
   console.log('Login', safeway_username, safeway_password)
 
-  await driver.get('https://www.safeway.com/account/sign-in.html')
+  await driver.get(site_login)
 
   await sleep(driver)
 
@@ -65,6 +72,24 @@ async function sign_in (driver) {
   await sleep(driver)
 
   await screenshot(driver, 'sign-in-done')
+}
+
+async function prebook (driver) {
+  console.log('Pre-Book')
+
+  await driver.get(site_prebook)
+
+  await sleep(driver)
+  await screenshot(driver, 'pre-book-load')
+
+  await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('div')).click()
+  await sleep(driver, 0.25)
+
+  await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('button')).click()
+  await sleep(driver)
+
+  await screenshot(driver, 'pre-book-done')
+
 }
 
 async function add_product (driver, id, item) {
@@ -83,19 +108,16 @@ async function add_product (driver, id, item) {
     const button_add_id = boil(elements.ADD_BUTTON, data)
     const button_quantity_up_id = boil(elements.QUANTITY_UP_BUTTON, data)
 
-    let ele
     try {
-      ele = driver.findElement(By.id(button_add_id))
+      await driver.findElement(By.id(button_add_id)).click()
     } catch (err) {
       try {
-        ele = driver.findElement(By.id(button_quantity_up_id))
+        await driver.findElement(By.id(button_quantity_up_id)).click()
       } catch (err) {
         console.log('No button for product', id)
         continue
       }
     }
-
-    await ele.click()
 
     await sleep(driver, 0.5)
 
@@ -113,6 +135,51 @@ async function list_groceries() {
   return result
 }
 
+async function shopping_cart (driver) {
+  console.log('Open Shopping Cart')
+
+  await driver.get(site_shopping_cart)
+
+  await sleep(driver)
+  await screenshot(driver, 'shopping-cart')
+}
+
+async function checkout (driver) {
+  if (name_cvv_code_secret === null) {
+    console.log('No CVV code given to place order, skipping checkout')
+    return
+  }
+
+  const cvv_code = await secret(name_cvv_code_secret)
+
+  console.log('Open Checkout')
+
+  await driver.get(site_checkout)
+  await sleep(driver)
+
+  await screenshot(driver, 'checkout-load')
+
+  try {
+    await driver.findElement(By.css('app-order-info')).findElement(By.css('button')).click()
+    await sleep(driver, 0.25)
+  } catch {
+    console.log('Unable to click "Continue" prompt for Order Info view')
+  }
+
+  await screenshot(driver, 'checkout-payment')
+
+  await driver.findElement(By.id('cvv_field')).sendKeys(cvv_code)
+  await sleep(driver, 0.25)
+
+  await screenshot(driver, 'checkout-payment-cvv')
+
+  await driver.findElement(By.id('placeOrderSnap')).click()
+  await sleep(driver)
+
+  await screenshot(driver, 'checkout-payment-done')
+
+}
+
 async function main () {
   const options = new Chrome.Options()
   options.addArguments('--headless=new')
@@ -123,11 +190,17 @@ async function main () {
 
   await sign_in(driver)
 
+  await prebook(driver)
+
   const list = await list_groceries()
 
   for (const [id, item] of list) {
     await add_product(driver, id, item)
   }
+
+  await shopping_cart(driver)
+
+  await checkout(driver)
 
   await driver.quit()
 }
