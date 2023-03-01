@@ -66,6 +66,8 @@ function boil (value, data) {
 }
 
 async function secret (name) {
+  console.log('Get Secret', name)
+
   const [version] = await gcp_secret_client.accessSecretVersion({ name })
   return version.payload.data.toString()
 }
