@@ -11,7 +11,7 @@ const name_safeway_username_secret = process.env.SAFEWAY_USERNAME_SECRET || null
 const name_safeway_password_secret = process.env.SAFEWAY_PASSWORD_SECRET || null
 const name_cvv_code_secret = process.env.CVV_CODE_SECRET || null
 
-sendgrid_mail.setApiKey(process.env.SENDGRID_API_KEY)
+const sendgrid_api_key_secret = process.env.SENDGRID_API_KEY_SECRET || null
 const sendgrid_from_email = process.env.SENDGRID_FROM_EMAIL
 const sendgrid_to_email = process.env.SENDGRID_TO_EMAIL
 const output_bucket = process.env.OUTPUT_BUCKET
@@ -182,10 +182,12 @@ async function checkout (driver) {
   await sleep(driver)
 
   await screenshot(driver, 'checkout-payment-done')
-
 }
 
 async function notify () {
+  const sendgrid_api_key = await secret(sendgrid_api_key_secret)
+  sendgrid_mail.setApiKey(sendgrid_api_key)
+
   const date = new Date
   const date_string = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
 
