@@ -55,3 +55,9 @@ Bucket used for output.
 ## Execute run.sh
 Start the process by executing the `run.sh` script, which will pull the secret information
 and pass the data along as it starts the main process.
+
+# List Items
+The list items that will be added to the cart are pulled from Firebase, each item should use
+the identifier from the Safeway site for the ID, and have at least a `quantity` numeric field
+to identify how many of the item should be added.  If there is a `name` string field it will
+be used in the console output while the process is running.
