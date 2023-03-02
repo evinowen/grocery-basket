@@ -6,7 +6,7 @@ SAFEWAY_PASSWORD_SECRET=`curl "http://metadata.google.internal/computeMetadata/v
 echo "Found Password Secret: $SAFEWAY_PASSWORD_SECRET"
 
 SENDGRID_API_KEY_SECRET=`curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/SENDGRID_API_KEY_SECRET" -H "Metadata-Flavor: Google"`
-echo "Found Password Secret: $SENDGRID_API_KEY_SECRET"
+echo "Found SendGrid API Secret: $SENDGRID_API_KEY_SECRET"
 
 SENDGRID_FROM_EMAIL=`curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/SENDGRID_FROM_EMAIL" -H "Metadata-Flavor: Google"`
 echo "Found sender e-mail: $SENDGRID_FROM_EMAIL"
