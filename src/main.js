@@ -60,7 +60,7 @@ async function screenshot (driver, title) {
 async function sign_in (driver) {
   const safeway_username = await secret(name_safeway_username_secret)
   const safeway_password = await secret(name_safeway_password_secret)
-  console.log('Login', safeway_username, safeway_password)
+  console.log('Login', safeway_username, '•'.repeat(safeway_password.length))
 
   await driver.get(site_login)
 
@@ -85,7 +85,7 @@ async function prebook (driver) {
   await driver.get(site_prebook)
 
   await sleep(driver)
-  await screenshot(driver, 'pre-book-load')
+  await screenshot(driver, 'prebook-load')
 
   await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('div')).click()
   await sleep(driver, 0.25)
@@ -93,7 +93,7 @@ async function prebook (driver) {
   await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('button')).click()
   await sleep(driver)
 
-  await screenshot(driver, 'pre-book-done')
+  await screenshot(driver, 'prebook-done')
 
 }
 
@@ -202,7 +202,7 @@ async function notify () {
       <br />
       <img src="https://storage.googleapis.com/${output_bucket}/prebook-done.png" />
       <br />
-      <img src="https://storage.googleapis.com/${output_bucket}/checkout-load.png" />
+      <img src="https://storage.googleapis.com/${output_bucket}/shopping-cart.png" />
       <br />
       <img src="https://storage.googleapis.com/${output_bucket}/checkout-done.png" />
       <br />
