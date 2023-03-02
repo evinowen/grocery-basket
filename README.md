@@ -13,6 +13,9 @@ https://github.com/GoogleCloudPlatform/gcsfuse/blob/master/docs/installing.md
 The VM must be configured with the following metadata:
 - `SAFEWAY_USERNAME_SECRET` The full path of the Secret Manager secret used for the site username
 - `SAFEWAY_PASSWORD_SECRET` The full path of the Secret Manager secret used for the site password
+- `SENDGRID_API_KEY_SECRET` The API key for the SendGrid account that will be sending notifications
+- `SENDGRID_FROM_EMAIL` The from address that matches the configuration in SendGrid
+- `SENDGRID_TO_EMAIL` The destination e-mail address(es) for notifications
 - `OUTPUT_BUCKET` The name of a storage bucket used for storing the process run output
 
 ## Install Chrome
