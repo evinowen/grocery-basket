@@ -24,8 +24,6 @@ const site_product = 'https://www.safeway.com/shop/product-details.PRODUCT_ID.ht
 const site_shopping_cart = 'https://www.safeway.com/erums/cart'
 const site_checkout = 'https://www.safeway.com/erums/checkout'
 
-const cvv_code = '000'
-
 const elements = {
   'ADD_BUTTON': 'addButton_PRODUCT_ID',
   'QUANTITY_UP_BUTTON': 'inc_qtyInfo_PRODUCT_ID'
