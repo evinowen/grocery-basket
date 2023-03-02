@@ -198,8 +198,6 @@ async function notify () {
     html: `
       <h1>Groceries Shopped for ${date_string}</h1>
       <br />
-      <img src="https://storage.googleapis.com/${output_bucket}/shopping-cart.png" />
-      <br />
       <img src="https://storage.googleapis.com/${output_bucket}/prebook-done.png" />
       <br />
       <img src="https://storage.googleapis.com/${output_bucket}/shopping-cart.png" />
