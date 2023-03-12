@@ -87,13 +87,22 @@ async function prebook (driver) {
   await sleep(driver)
   await screenshot(driver, 'prebook-load')
 
-  await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('div')).click()
-  await sleep(driver, 0.25)
+  try {
+    await driver.findElement(By.id('close-btn')).click()
+    await sleep(driver, 0.25)
+  } catch { }
 
-  await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('button')).click()
-  await sleep(driver)
+  try {
+    await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('div')).click()
+    await sleep(driver, 0.25)
 
-  await screenshot(driver, 'prebook-done')
+    await driver.findElement(By.css('app-delivery-window-type')).findElement(By.css('button')).click()
+    await sleep(driver)
+
+    await screenshot(driver, 'prebook-done')
+  } catch {
+    await screenshot(driver, 'prebook-fail')
+  }
 
 }
 
