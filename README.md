@@ -18,18 +18,18 @@ The VM must be configured with the following metadata:
 - `SENDGRID_TO_EMAIL` The destination e-mail address(es) for notifications
 - `OUTPUT_BUCKET` The name of a storage bucket used for storing the process run output
 
+## Linux User
+```
+sudo useradd -m grocery-daemon
+sudo usermod -L grocery-daemon
+sudo usermod -s /bin/bash grocery-daemon
+```
+
 ## Install Chrome
 ```
 sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt-get -f install
 sudo rm google-chrome-stable_current_amd64.deb
-```
-
-## Install Node.js + NPM with NVM
-```
-sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-source ~/.bashrc
-nvm install v17.4.0
 ```
 
 ## Install Selenium ChromeDriver
@@ -41,6 +41,17 @@ sudo mv chromedriver /usr/bin/chromedriver
 sudo chown root:root /usr/bin/chromedriver
 sudo chmod +x /usr/bin/chromedriver
 rm -f LICENSE.chromedriver chromedriver_linux64.zip
+```
+
+## Assume `grocery-daemon` user
+Execute the remaining steps as the `grocery-daemon` user.
+
+## Install Node.js + NPM with NVM
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh
+nvm install v17.4.0
 ```
 
 ## Compute Engine IAM Service Account
